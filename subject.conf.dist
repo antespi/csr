@@ -1,0 +1,23 @@
+# Your subject data, all params are mandatory
+##########################################
+COUNTRY='ES'
+STATE='Madrid'
+LOCATION='Your city'
+ORGUNIT='Your Organization Unit'
+ORG='Your Organizacion, Ltd'
+
+# KEY options
+##########################################
+# KEYALG : Key Algorithm (dsa, rsa)
+# Default is rsa
+KEYALG='dsa'
+
+# BITS : Key lenght (512, 1024, 2048, 4096)
+# Default is 2048
+BITS='2048'
+
+# CSR options
+##########################################
+# SIGNALG : Signature Algorithm (md5, sha1, sha256)
+# Default is sha1
+SIGNALG='sha256'
