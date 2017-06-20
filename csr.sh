@@ -18,6 +18,7 @@ CHMOD=/bin/chmod
 LESS=/bin/less
 
 CONFIG_FILE='subject.conf'
+OPENSSL_FILE='openssl.conf'
 
 if [ ! -x $OPENSSL ]; then
    echo "ERROR : OpenSSL not installed or not found at $OPENSSL"
@@ -36,11 +37,13 @@ else
    exit $E_CONFIG_NOT_FOUND;
 fi
 
-if [ -z "$COUNTRY" ]; then echo "ERROR : Country not set"; exit $E_BAD_CONFIG; fi
-if [ -z "$STATE" ]; then echo "ERROR : State not set"; exit $E_BAD_CONFIG; fi
-if [ -z "$LOCATION" ]; then echo "ERROR : Location not set"; exit $E_BAD_CONFIG; fi
-if [ -z "$ORG" ]; then echo "ERROR : Organization not set"; exit $E_BAD_CONFIG; fi
-if [ -z "$ORGUNIT" ]; then echo "ERROR : Organization unit not set"; exit $E_BAD_CONFIG; fi
+if [ ! -f $OPENSSL_FILE ] && [ -z "$SUBJECT" ]; then
+    if [ -z "$COUNTRY" ]; then echo "ERROR : Country not set"; exit $E_BAD_CONFIG; fi
+    if [ -z "$STATE" ]; then echo "ERROR : State not set"; exit $E_BAD_CONFIG; fi
+    if [ -z "$LOCATION" ]; then echo "ERROR : Location not set"; exit $E_BAD_CONFIG; fi
+    if [ -z "$ORG" ]; then echo "ERROR : Organization not set"; exit $E_BAD_CONFIG; fi
+    if [ -z "$ORGUNIT" ]; then echo "ERROR : Organization unit not set"; exit $E_BAD_CONFIG; fi
+fi
 
 DOMAIN=$1
 
@@ -61,18 +64,18 @@ fi
 
 if [ "$KEYALG" == 'dsa' ]; then
    if [ ! -f $DOMAIN.dsaparam.pem ]; then
-      echo "Creating DSA Param file for $DOMAIN..."
+      echo "[*] Creating DSA Param file for $DOMAIN..."
       if ! $OPENSSL dsaparam -out $DOMAIN.dsaparam.pem $BITS; then
          echo "ERROR : Generating DSA param file"
          exit $E_DSA_PARAMFILE;
       fi
    fi
-   echo "Creating DSA Key..."
+   echo "[*] Creating DSA Key..."
    if ! $OPENSSL gendsa -out $DOMAIN.key $DOMAIN.dsaparam.pem; then
       echo "ERROR : Generating key"
       exit $E_DSA_KEY;
    fi
-   echo "Encrypt DSA Key with AES 256 CBC..."
+   echo "[*] Encrypt DSA Key with AES 256 CBC..."
    if ! $OPENSSL dsa -aes256 -in $DOMAIN.key -out $DOMAIN.key.enc; then
       echo "ERROR : Encrypting key"
       exit $E_DSA_ENCKEY;
@@ -80,22 +83,31 @@ if [ "$KEYALG" == 'dsa' ]; then
 
 elif [ "$KEYALG" == 'rsa' ]; then
 
-   echo "Creating RSA Key..."
+   echo "[*] Creating RSA Key..."
    if ! $OPENSSL genrsa -out $DOMAIN.key $BITS; then
       echo "ERROR : Generating key"
       exit $E_RSA_KEY;
    fi
-   echo "Encrypt RSA Key with AES 256 CBC..."
+   echo "[*] Encrypt RSA Key with AES 256 CBC..."
    if ! $OPENSSL rsa -aes256 -in $DOMAIN.key -out $DOMAIN.key.enc; then
       echo "ERROR : Encrypting key"
       exit $E_RSA_ENCKEY;
    fi
 fi
 
-echo "Creating CSR..."
-if ! $OPENSSL req -new -key $DOMAIN.key -out $DOMAIN.csr -${SIGNALG} -subj "/C=$COUNTRY/ST=$STATE/L=$LOCATION/O=$ORG/OU=$ORGUNIT/CN=$DOMAIN"; then
-   echo "ERROR : Generating csr"
-   exit $E_CSR;
+echo "[*] Creating CSR..."
+args=""
+if [ -z "$SUBJECT" ]; then
+    SUBJECT="/C=$COUNTRY/ST=$STATE/L=$LOCATION/O=$ORG/OU=$ORGUNIT/CN=$DOMAIN"
+fi
+if [ -f $OPENSSL_FILE ]; then
+    args="-config $OPENSSL_FILE"
+else
+    args="-subj $SUBJECT"
+fi
+if ! $OPENSSL req $args -new -key $DOMAIN.key -out $DOMAIN.csr -${SIGNALG}; then
+    echo "ERROR : Generating csr"
+    exit $E_CSR;
 fi
 
 echo "OK - Certificate CSR created successfully"

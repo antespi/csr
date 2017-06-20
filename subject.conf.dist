@@ -1,16 +1,17 @@
-# Your subject data, all params are mandatory
+# Your subject data, all params are mandatory or define a custom SUBJECT
 ##########################################
-COUNTRY='ES'
-STATE='Madrid'
-LOCATION='Your city'
-ORGUNIT='Your Organization Unit'
-ORG='Your Organizacion, Ltd'
+# COUNTRY='ES'
+# STATE='Madrid'
+# LOCATION='Your city'
+# ORGUNIT='Your Organization Unit'
+# ORG='Your Organizacion, Ltd'
+SUBJECT='CN=www.mydomain.com'
 
 # KEY options
 ##########################################
 # KEYALG : Key Algorithm (dsa, rsa)
 # Default is rsa
-KEYALG='dsa'
+KEYALG='rsa'
 
 # BITS : Key lenght (512, 1024, 2048, 4096)
 # Default is 2048

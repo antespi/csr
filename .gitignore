@@ -1,5 +1,6 @@
 passphrase.txt
 subject.conf
+openssl.conf
 *.csr
 *.key
 *.key.enc

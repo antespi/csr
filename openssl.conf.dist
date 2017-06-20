@@ -1,0 +1,31 @@
+[ req ]
+default_bits       = 2048
+default_md         = sha256
+prompt             = no
+encrypt_key        = no
+
+# base request
+distinguished_name = req_distinguished_name
+
+# extensions
+req_extensions     = v3_req
+
+# distinguished_name
+[ req_distinguished_name ]
+countryName            = "ES"                     # C=
+stateOrProvinceName    = "Madrid"                 # ST=
+localityName           = "Your city"              # L=
+postalCode             = "28000"                  # L/postalcode=
+streetAddress          = "My street"              # L/street=
+organizationName       = "Your Organizacion, Ltd" # O=
+organizationalUnitName = "Your Organization Unit" # OU=
+commonName             = "www.mydomain.com"       # CN=
+emailAddress           = "webmaster@mydomain.com" # CN/emailAddress=
+
+# req_extensions
+[ v3_req ]
+# http://www.openssl.org/docs/apps/x509v3_config.html
+basicConstraints = CA:FALSE
+keyUsage=critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName  = DNS:www.example.com,DNS:www2.example.com # multidomain certificate
